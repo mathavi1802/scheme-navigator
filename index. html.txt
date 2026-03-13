@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autonomous Scheme Navigator</title>
+</head>
+<body>
+<h1>Autonomous Scheme Navigator</h1>
+<form id="schemeForm">
+  Age: <input type="number" name="age" required><br>
+  Income: <input type="number" name="income" required><br>
+  Occupation: <input type="text" name="occupation" required><br>
+  <button type="submit">Check Schemes</button>
+</form>
+<h2>Eligible Schemes:</h2>
+<ul id="result"></ul>
+
+<script>
+document.getElementById("schemeForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = {
+    age: parseInt(formData.get("age")),
+    income: parseFloat(formData.get("income")),
+    occupation: formData.get("occupation")
+  };
+  
+  const response = await fetch("http://127.0.0.1:8000/get-schemes", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  });
+  
+  const result = await response.json();
+  const ul = document.getElementById("result");
+  ul.innerHTML = "";
+  result.eligible_schemes.forEach(scheme => {
+    const li = document.createElement("li");
+    li.textContent = scheme;
+    ul.appendChild(li);
+  });
+});
+</script>
+</body>
+</html>

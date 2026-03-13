@@ -1,0 +1,32 @@
+# app.py
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(title="Autonomous Scheme Navigator API")
+
+# Enable CORS for frontend access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# User input model
+class UserProfile(BaseModel):
+    age: int
+    income: float
+    occupation: str
+
+# Sample schemes
+SCHEMES = [
+    {"name": "Pradhan Mantri Awas Yojana", "criteria": lambda user: user.income < 200000},
+    {"name": "Skill Development Scheme", "criteria": lambda user: user.age < 35},
+    {"name": "Senior Citizen Pension", "criteria": lambda user: user.age >= 60},
+]
+
+@app.post("/get-schemes")
+def get_schemes(user: UserProfile):
+    eligible = [scheme["name"] for scheme in SCHEMES if scheme["criteria"](user)]
+    return {"eligible_schemes": eligible}
