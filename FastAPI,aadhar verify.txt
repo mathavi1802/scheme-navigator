@@ -1,0 +1,45 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+import re
+
+app = FastAPI(title="Autonomous Scheme Navigator with Aadhaar")
+
+# Enable CORS for frontend access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# User input model
+class UserProfile(BaseModel):
+    aadhaar: str
+    age: int
+    income: float
+    occupation: str
+
+# Sample schemes
+SCHEMES = [
+    {"name": "Pradhan Mantri Awas Yojana", "criteria": lambda user: user.income < 200000},
+    {"name": "Skill Development Scheme", "criteria": lambda user: user.age < 35},
+    {"name": "Senior Citizen Pension", "criteria": lambda user: user.age >= 60},
+]
+
+# Simulated Aadhaar verification function
+def verify_aadhaar(aadhaar_number: str):
+    # Aadhaar must be exactly 12 digits
+    if re.fullmatch(r"\d{12}", aadhaar_number):
+        return True
+    return False
+
+@app.post("/get-schemes")
+def get_schemes(user: UserProfile):
+    # Verify Aadhaar
+    if not verify_aadhaar(user.aadhaar):
+        raise HTTPException(status_code=400, detail="Invalid Aadhaar number")
+    
+    # Find eligible schemes
+    eligible = [scheme["name"] for scheme in SCHEMES if scheme["criteria"](user)]
+    return {"eligible_schemes": eligible}
