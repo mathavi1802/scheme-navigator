@@ -1,0 +1,9 @@
+autonomous_scheme_navigator/
+│
+├── app.py                  # Flask backend
+├── templates/
+│   └── index.html           # Frontend HTML
+├── static/
+│   ├── style.css            # CSS for styling
+│   └── script.js            # JS for frontend interactions
+└── schemes.json             # Sample government schemes data
