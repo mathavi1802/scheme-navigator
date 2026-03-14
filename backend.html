@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TN Scheme Navigator</title>
+    <style>
+        :root {
+            --tn-blue: #004a99;
+            --tn-green: #2e7d32;
+            --bg-light: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background: var(--tn-blue);
+            color: white;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--tn-green);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        #output {
+            margin-top: 30px;
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .status-verified {
+            color: var(--tn-green);
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Government of Tamil Nadu</h1>
+        <p>Autonomous Welfare Scheme Navigator</p>
+    </header>
+
+    <div class="container">
+        <div id="auth-section">
+            <div class="input-group">
+                <label for="aadhaar">Aadhaar Number</label>
+                <input type="text" id="aadhaar" placeholder="Enter 12-digit Aadhaar" maxlength="12"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+            <div class="input-group">
+                <label for="otp">OTP Verification</label>
+                <input type="text" id="otp" placeholder="Enter 6-digit OTP (Demo: 123456)" maxlength="6">
+            </div>
+            <button onclick="startNavigation()">Begin Autonomous Search</button>
+            <p id="verify-msg" class="status-verified"></p>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        let simulationInterval;
+
+        function startNavigation() {
+            const aadhaar = document.getElementById('aadhaar').value;
+            const otp = document.getElementById('otp').value;
+            const outputDiv = document.getElementById('output');
+            const verifyMsg = document.getElementById('verify-msg');
+
+            // Clear existing interval to prevent overlapping intervals on multiple clicks
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+            }
+
+            // Reset display for new attempt
+            outputDiv.innerHTML = "";
+            verifyMsg.style.display = "none";
+
+            // 1. Validation Check
+            if (aadhaar.length !== 12) {
+                alert("Please enter a valid 12-digit Aadhaar number.");
+                return;
+            }
+
+            if (otp === "123456") {
+                // 2. Verification UI Update
+                verifyMsg.innerText = "✅ Identity Verified. Starting Navigator...";
+                verifyMsg.style.display = "block";
+                outputDiv.style.display = "block";
+
+                outputDiv.innerHTML = "Initializing Navigator...\nLinking to TNeGA Database...\n\n";
+
+                // 3. Simulated Data Fetch (In real use, replace this with a fetch() call to Python)
+                const mockData = [
+                    { path: "schemes/education/pudhumai_penn", val: "₹1,000/month" },
+                    { path: "schemes/health/insurance", val: "₹5 Lakh Coverage" },
+                    { path: "schemes/transport/free_bus", val: "Active for Women" },
+                    { path: "schemes/agriculture/crop_loan", val: "0% Interest" }
+                ];
+
+                let i = 0;
+                simulationInterval = setInterval(() => {
+                    if (i < mockData.length) {
+                        // Using .padEnd to keep columns neat
+                        outputDiv.innerHTML += `📍 Path: ${mockData[i].path.padEnd(35)} | Value: ${mockData[i].val}\n`;
+                        outputDiv.scrollTop = outputDiv.scrollHeight; // Auto-scroll
+                        i++;
+                    } else {
+                        outputDiv.innerHTML += "\n✅ Navigation Complete. All schemes mapped.";
+                        clearInterval(simulationInterval);
+                    }
+                }, 800);
+
+            } else {
+                alert("Incorrect OTP. Please try 123456 for this demo.");
+            }
+        }
+    </script>
+
+</body>
+
+</html>

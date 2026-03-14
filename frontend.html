@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Scheme Navigator - Advanced Voice</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        #start-voice {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #submit-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #clear-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #444;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Scheme Navigator</h2>
+
+        <form id="scheme-form">
+            <label for="gender">Gender:</label>
+            <input type="text" id="gender" placeholder="Say 'Gender Male'">
+
+            <label for="income">Annual Income:</label>
+            <input type="number" id="income" placeholder="Say 'Income 50000'">
+
+            <label for="age">Age:</label>
+            <input type="number" id="age" placeholder="Say 'Age 21'">
+
+            <label for="occupation">Occupation:</label>
+            <input type="text" id="occupation" placeholder="Say 'Occupation Student'">
+
+            <div class="btn-group">
+                <button type="button" id="start-voice">🎤 Start Voice Input</button>
+                <button type="submit" id="submit-btn">✅ Submit Details</button>
+                <button type="button" id="clear-btn">🧹 Clear Form</button>
+            </div>
+        </form>
+
+        <p id="status">Ready to help! Click the mic.</p>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-voice');
+        const clearBtn = document.getElementById('clear-btn');
+        const status = document.getElementById('status');
+        const form = document.getElementById('scheme-form');
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-IN';
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            let isListening = false;
+
+            startBtn.onclick = () => {
+                if (!isListening) {
+                    recognition.start();
+                } else {
+                    recognition.stop();
+                }
+            };
+
+            recognition.onstart = () => {
+                isListening = true;
+                status.innerHTML = "<b>Listening...</b><br>Say 'Age 25', 'Clear', or 'Submit'";
+                startBtn.style.backgroundColor = "#dc3545";
+                startBtn.innerText = "🛑 Stop Listening";
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+                console.log("Captured:", transcript);
+
+                // 1. Voice Command: SUBMIT
+                if (transcript.includes("submit") || transcript.includes("done")) {
+                    form.requestSubmit();
+                    recognition.stop();
+                    return;
+                }
+
+                // 2. Voice Command: CLEAR
+                if (transcript.includes("clear form") || transcript.includes("reset")) {
+                    form.reset();
+                    status.innerText = "Form cleared by voice.";
+                    return;
+                }
+
+                // 3. Data Extraction Logic
+                if (transcript.includes("gender")) {
+                    document.getElementById('gender').value = transcript.split("gender")[1].trim();
+                }
+                else if (transcript.includes("income")) {
+                    const num = transcript.match(/\d+/);
+                    if (num) document.getElementById('income').value = num[0];
+                }
+                else if (transcript.includes("age")) {
+                    const num = transcript.match(/\d+/);
+                    if (num) document.getElementById('age').value = num[0];
+                }
+                else if (transcript.includes("occupation")) {
+                    document.getElementById('occupation').value = transcript.split("occupation")[1].trim();
+                }
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                startBtn.innerText = "🎤 Start Voice Input";
+                startBtn.style.backgroundColor = "#007bff";
+                status.innerText = "Voice input stopped.";
+            };
+
+            recognition.onerror = (e) => {
+                status.innerText = "Error: " + e.error;
+                recognition.stop();
+            };
+
+        } else {
+            status.innerText = "Voice input not supported in this browser.";
+            startBtn.disabled = true;
+        }
+
+        // Manual Clear Button
+        clearBtn.onclick = () => {
+            form.reset();
+            status.innerText = "Form cleared.";
+        };
+
+        // Form Submit Handler
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const data = {
+                gender: document.getElementById('gender').value,
+                income: document.getElementById('income').value,
+                age: document.getElementById('age').value,
+                occupation: document.getElementById('occupation').value
+            };
+            alert("Form Submitted!\n" + JSON.stringify(data, null, 2));
+            status.innerText = "Data sent successfully!";
+        };
+    </script>
+
+</body>
+
+</html>
